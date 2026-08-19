@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "AquaMind (Chrome)",
+      "request": "launch",
+      "type": "dart",
+      "args": ["-d", "chrome"]
+    },
+    {
+      "name": "AquaMind (Edge)",
+      "request": "launch",
+      "type": "dart",
+      "args": ["-d", "edge"]
+    }
+  ]
+}
