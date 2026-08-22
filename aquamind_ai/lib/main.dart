@@ -29,13 +29,23 @@ class _AquaMindAppState extends State<AquaMindApp> {
     _checkProfile();
   }
 
+  // UPDATED: Added try-catch to prevent iOS freezing on startup
   Future<void> _checkProfile() async {
-    await UserStorage.loadAllData();
-    final profile = UserStorage.profile;
-    setState(() {
-      _hasProfile = profile != null && profile.name.trim().isNotEmpty;
-      _isLoading = false;
-    });
+    try {
+      await UserStorage.loadAllData();
+      final profile = UserStorage.profile;
+      setState(() {
+        _hasProfile = profile != null && profile.name.trim().isNotEmpty;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Storage load error: $e");
+      // Fallback safely if storage fails on startup so the app doesn't freeze
+      setState(() {
+        _hasProfile = false;
+        _isLoading = false;
+      });
+    }
   }
 
   @override
