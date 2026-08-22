@@ -26,11 +26,16 @@ class _MentalReadinessPageState extends State<MentalReadinessPage> {
   @override
   void initState() {
     super.initState();
-    energy = (widget.session.energy ?? 5).toDouble();
-    focus = (widget.session.focus ?? 5).toDouble();
-    confidence = widget.session.confidence;
-    stress = widget.session.stress;
-    fatigue = 5.0;
+    _resetToZero();
+  }
+
+  void _resetToZero() {
+    // Force clean 0 baseline every time page opens
+    energy = 0.0;
+    focus = 0.0;
+    confidence = 0.0;
+    stress = 0.0;
+    fatigue = 0.0;
   }
 
   @override
@@ -99,6 +104,10 @@ class _MentalReadinessPageState extends State<MentalReadinessPage> {
                   widget.session.stress = stress;
 
                   widget.onSubmit(widget.session);
+
+                  // Reset local values after submitting
+                  _resetToZero();
+
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
@@ -154,8 +163,10 @@ class _MentalReadinessPageState extends State<MentalReadinessPage> {
                 ),
               ),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.cyan.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
@@ -189,16 +200,18 @@ class _MentalReadinessPageState extends State<MentalReadinessPage> {
                 Text(
                   minLabel,
                   style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500),
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
                 Text(
                   maxLabel,
                   style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500),
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ],
             ),

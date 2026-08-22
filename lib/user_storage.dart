@@ -1,4 +1,3 @@
-// lib/user_storage.dart
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'user_profile.dart';
@@ -86,5 +85,18 @@ class UserStorage {
     profile = match;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_activeProfileIdKey, profileId);
+  }
+
+  // Saves queue and history to disk for a specific profile
+  static Future<void> saveRaceData(
+    String profileId,
+    List<dynamic> queue,
+    List<dynamic> history,
+  ) async {
+    final prefs = await SharedPreferences.getInstance();
+    activeQueues[profileId] = queue;
+    completedHistories[profileId] = history;
+    await prefs.setString('queue_$profileId', jsonEncode(queue));
+    await prefs.setString('history_$profileId', jsonEncode(history));
   }
 }
