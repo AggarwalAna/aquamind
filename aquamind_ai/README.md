@@ -1,4 +1,4 @@
-# aquamind_ai
+# aquamind
 
 A new Flutter project.
 

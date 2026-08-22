@@ -1,5 +1,5 @@
-name: aquamind_ai
-description: "AI-powered race strategy and performance analytics app for competitive swimmers."
+name: aquamind
+description: "Swim race strategy and performance analytics app for competitive swimmers."
 publish_to: "none"
 
 version: 1.0.0+1

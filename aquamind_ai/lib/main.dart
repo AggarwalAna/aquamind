@@ -36,6 +36,7 @@ class _AquaMindAppState extends State<AquaMindApp> {
       final profile = UserStorage.profile;
       setState(() {
         _hasProfile = profile != null && profile.name.trim().isNotEmpty;
+        // _hasProfile = false;
         _isLoading = false;
       });
     } catch (e) {

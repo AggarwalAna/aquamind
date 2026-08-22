@@ -1,4 +1,4 @@
-# swim_tracker
+# aquamind
 
 A new Flutter project.
 
