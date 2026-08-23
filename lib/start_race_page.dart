@@ -4,6 +4,7 @@ import 'race_session.dart';
 import 'mental_readiness_page.dart';
 import 'user_storage.dart';
 import 'user_profile.dart';
+import 'race_session_storage.dart';
 
 class StartRacePage extends StatefulWidget {
   const StartRacePage({super.key});
@@ -13,7 +14,7 @@ class StartRacePage extends StatefulWidget {
 }
 
 class _StartRacePageState extends State<StartRacePage> {
-  String? _selectedEventToStart;
+  dynamic _selectedProfileEvent;
 
   @override
   Widget build(BuildContext context) {
@@ -27,29 +28,26 @@ class _StartRacePageState extends State<StartRacePage> {
             "Start Race",
             style: TextStyle(color: Colors.white),
           ),
+          iconTheme: const IconThemeData(color: Colors.cyanAccent),
         ),
         body: const Center(
-          child: Text(
-            "No active swimmer profile found.",
-            style: TextStyle(color: Colors.white60),
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Text(
+              "No active swimmer profile found. Please configure your profile and events in settings first.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.white60, fontSize: 15),
+            ),
           ),
         ),
       );
     }
 
-    // Retrieve active queue sessions for this profile
-    List<dynamic> activeQueue = UserStorage.activeQueues[profile.id] ?? [];
+    final profileEvents = profile.events;
 
-    // Extract event names strictly from the profile setup
-    final List<String> profileEvents = profile.events
-        .map((e) => e.eventName.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-
-    // Validate and fix dropdown selection if it's out of bounds
-    if (_selectedEventToStart == null ||
-        !profileEvents.contains(_selectedEventToStart)) {
-      _selectedEventToStart = profileEvents.isNotEmpty
+    if (_selectedProfileEvent == null ||
+        !profileEvents.contains(_selectedProfileEvent)) {
+      _selectedProfileEvent = profileEvents.isNotEmpty
           ? profileEvents.first
           : null;
     }
@@ -58,9 +56,10 @@ class _StartRacePageState extends State<StartRacePage> {
       backgroundColor: const Color(0xFF061A2B),
       appBar: AppBar(
         backgroundColor: const Color(0xFF061A2B),
+        elevation: 0,
         title: const Text(
           "AquaMind – AA",
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         iconTheme: const IconThemeData(color: Colors.cyanAccent),
       ),
@@ -74,44 +73,85 @@ class _StartRacePageState extends State<StartRacePage> {
               style: TextStyle(
                 color: Colors.cyanAccent,
                 fontWeight: FontWeight.bold,
-                fontSize: 18,
+                fontSize: 20,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             const Text(
-              "Select an upcoming event from your profile setup below to initiate your pre-race mental readiness and reaction test.",
-              style: TextStyle(color: Colors.white60, fontSize: 13),
+              "Select your target event from your profile setup below to initiate your pre-race mental readiness check-in.",
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 14,
+                height: 1.4,
+              ),
             ),
-            const SizedBox(height: 16),
-
-            // Dropdown Card for Profile Events Only
+            const SizedBox(height: 20),
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: const Color(0xFF0D2840),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: Colors.cyanAccent.withValues(alpha: 0.4),
+                  width: 1.5,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Select Event to Start Preparation",
-                    style: TextStyle(
-                      color: Colors.cyanAccent,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                  const Row(
+                    children: [
+                      Icon(
+                        Icons.timer_outlined,
+                        color: Colors.cyanAccent,
+                        size: 20,
+                      ),
+                      SizedBox(width: 8),
+                      Text(
+                        "Select Event to Start Preparation",
+                        style: TextStyle(
+                          color: Colors.cyanAccent,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 16),
                   profileEvents.isEmpty
-                      ? const Text(
-                          "No events configured in your profile setup. Please add events in settings first.",
-                          style: TextStyle(
-                            color: Colors.orangeAccent,
-                            fontSize: 13,
+                      ? Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF061A2B),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Colors.orangeAccent.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: const Row(
+                            children: [
+                              Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.orangeAccent,
+                              ),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  "No events configured in your profile setup. Please add events in your profile settings first.",
+                                  style: TextStyle(
+                                    color: Colors.orangeAccent,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         )
                       : Column(
@@ -119,12 +159,12 @@ class _StartRacePageState extends State<StartRacePage> {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
+                                horizontal: 14,
+                                vertical: 6,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF061A2B),
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: Colors.cyanAccent.withValues(
                                     alpha: 0.3,
@@ -132,81 +172,112 @@ class _StartRacePageState extends State<StartRacePage> {
                                 ),
                               ),
                               child: DropdownButtonHideUnderline(
-                                child: DropdownButton<String>(
-                                  value: _selectedEventToStart,
+                                child: DropdownButton<dynamic>(
+                                  value: _selectedProfileEvent,
                                   isExpanded: true,
                                   dropdownColor: const Color(0xFF0D2840),
                                   style: const TextStyle(
                                     color: Colors.white,
-                                    fontSize: 16,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  items: profileEvents.map((String eventName) {
-                                    return DropdownMenuItem<String>(
-                                      value: eventName,
-                                      child: Text(eventName),
+                                  items: profileEvents.map((eventObj) {
+                                    return DropdownMenuItem<dynamic>(
+                                      value: eventObj,
+                                      child: Text(
+                                        eventObj.eventName,
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
                                     );
                                   }).toList(),
-                                  onChanged: (String? newValue) {
+                                  onChanged: (dynamic newValue) {
                                     if (newValue != null) {
                                       setState(() {
-                                        _selectedEventToStart = newValue;
+                                        _selectedProfileEvent = newValue;
                                       });
                                     }
                                   },
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.cyanAccent,
-                                foregroundColor: Colors.black,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed: () {
-                                if (_selectedEventToStart == null ||
-                                    _selectedEventToStart!.isEmpty) {
-                                  return;
-                                }
-
-                                final freshSession = RaceSession();
-                                freshSession.event = _selectedEventToStart!;
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MentalReadinessPage(
-                                      session: freshSession,
-                                      onSubmit: (updatedSession) async {
-                                        activeQueue.add({
-                                          'event': updatedSession.event,
-                                          'energy': updatedSession.energy,
-                                          'timestamp': DateTime.now()
-                                              .toString(),
-                                        });
-                                        await UserStorage.saveRaceData(
-                                          profile.id,
-                                          activeQueue,
-                                          UserStorage.completedHistories[profile
-                                                  .id] ??
-                                              [],
-                                        );
-                                        setState(() {});
-                                      },
-                                    ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.cyanAccent,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
                                   ),
-                                );
-                              },
-                              child: const Text(
-                                "Start Race & Set Mental State",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
+                                  elevation: 4,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  if (_selectedProfileEvent == null) {
+                                    return;
+                                  }
+
+                                  final rawEventName =
+                                      _selectedProfileEvent.eventName;
+                                  final poolTypeString =
+                                      _selectedProfileEvent.poolType ?? 'SCY';
+
+                                  final formattedEventName =
+                                      rawEventName.contains('(')
+                                      ? rawEventName
+                                      : "$rawEventName ($poolTypeString)";
+
+                                  // Initialize session with NO time so it correctly enters the queue
+                                  final session = RaceSession()
+                                    ..event = formattedEventName
+                                    ..pool = poolTypeString;
+
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => MentalReadinessPage(
+                                        session: session,
+                                        onSubmit: (updatedSession) {
+                                          updatedSession.event =
+                                              formattedEventName;
+                                          updatedSession.pool = poolTypeString;
+                                          // Time variable explicitly left untouched here to maintain queue status
+                                        },
+                                      ),
+                                    ),
+                                  );
+
+                                  // Saves the incomplete session to trigger your "Resume Race" button
+                                  await RaceSessionStorage.instance.addSession(
+                                    session,
+                                  );
+                                  await RaceSessionStorage.loadSessions();
+
+                                  if (!context.mounted) return;
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Race queued! Use 'Resume Race' when you are ready.",
+                                      ),
+                                      backgroundColor: Colors.teal,
+                                    ),
+                                  );
+
+                                  Navigator.pop(context, true);
+                                },
+                                child: const Text(
+                                  "Queue Race & Mental Check-In",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                    letterSpacing: 0.5,
+                                  ),
                                 ),
                               ),
                             ),
@@ -215,121 +286,6 @@ class _StartRacePageState extends State<StartRacePage> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-
-            // Active Races / Resume Queue List
-            const Text(
-              "Active Race Sessions (Pending Completion)",
-              style: TextStyle(
-                color: Colors.cyanAccent,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 10),
-            activeQueue.isEmpty
-                ? Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0D2840),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: const Text(
-                      "No active races in progress. Choose an event above to begin.",
-                      style: TextStyle(color: Colors.white54, fontSize: 13),
-                    ),
-                  )
-                : ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: activeQueue.length,
-                    itemBuilder: (context, index) {
-                      final activeRace = activeQueue[index];
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0D2840),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: Colors.orangeAccent.withValues(alpha: 0.5),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    activeRace['event'] ?? 'Unknown Event',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    "Started: ${activeRace['timestamp']?.substring(0, 16) ?? ''}",
-                                    style: const TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.orangeAccent,
-                                foregroundColor: Colors.black,
-                              ),
-                              onPressed: () {
-                                final sessionToResume = RaceSession();
-                                sessionToResume.event =
-                                    activeRace['event'] ?? '';
-                                sessionToResume.energy =
-                                    activeRace['energy'] ?? 5;
-
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MentalReadinessPage(
-                                      session: sessionToResume,
-                                      onSubmit: (updatedSession) async {
-                                        activeQueue[index] = {
-                                          'event': updatedSession.event,
-                                          'energy': updatedSession.energy,
-                                          'timestamp': DateTime.now()
-                                              .toString(),
-                                        };
-                                        await UserStorage.saveRaceData(
-                                          profile.id,
-                                          activeQueue,
-                                          UserStorage.completedHistories[profile
-                                                  .id] ??
-                                              [],
-                                        );
-                                        setState(() {});
-                                      },
-                                    ),
-                                  ),
-                                );
-                              },
-                              child: const Text(
-                                "Resume Race",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
           ],
         ),
       ),

@@ -13,24 +13,29 @@ class ProgressTrackerPage extends StatefulWidget {
 class _ProgressTrackerPageState extends State<ProgressTrackerPage> {
   bool isLoading = true;
   List<RaceSession> sessions = [];
+  String? selectedEvent;
 
   double _parseTimeToSeconds(String? timeStr) {
-    if (timeStr == null || timeStr.isEmpty) return 0.0;
-
+    if (timeStr == null || timeStr.trim().isEmpty) return 0.0;
     String cleanStr = timeStr.trim();
-    if (cleanStr.contains(' ')) {
-      cleanStr = cleanStr.split(' ')[0];
-    }
-
+    if (cleanStr.contains(' ')) cleanStr = cleanStr.split(' ')[0];
     if (cleanStr.contains(':')) {
       List<String> parts = cleanStr.split(':');
       double mins = double.tryParse(parts[0]) ?? 0;
       double secs = double.tryParse(parts[1]) ?? 0;
       return (mins * 60) + secs;
     }
+    return double.tryParse(cleanStr) ?? 0.0;
+  }
 
-    double val = double.tryParse(cleanStr) ?? 0.0;
-    return val;
+  String _formatSecondsToTime(double totalSeconds) {
+    if (totalSeconds <= 0) return "--:--";
+    if (totalSeconds >= 60) {
+      int minutes = (totalSeconds / 60).floor();
+      double seconds = totalSeconds % 60;
+      return "$minutes:${seconds.toStringAsFixed(2).padLeft(5, '0')}";
+    }
+    return totalSeconds.toStringAsFixed(2);
   }
 
   @override
@@ -39,37 +44,54 @@ class _ProgressTrackerPageState extends State<ProgressTrackerPage> {
     _loadData();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _loadData(); // Automatically refreshes data every time you return to this page/tab
+  }
+
   Future<void> _loadData() async {
     await RaceSessionStorage.loadSessions();
     setState(() {
-      sessions = RaceSessionStorage.instance.completedSessions;
+      // Filter out queued races without times so they don't break the tracker
+      sessions = RaceSessionStorage.instance.completedSessions
+          .where((s) => s.time != null && s.time!.trim().isNotEmpty)
+          .toList();
       isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    const double goalSeconds = 52.0;
+    // Dynamically pull all unique events the user has completed
+    final uniqueEvents = sessions
+        .map((s) => s.event ?? "Unknown")
+        .toSet()
+        .toList();
+
+    // Default to the first available event if none is selected
+    if (selectedEvent == null && uniqueEvents.isNotEmpty) {
+      selectedEvent = uniqueEvents.first;
+    }
+
+    // Filter sessions to only show history for the selected event
+    final eventSessions = sessions
+        .where((s) => s.event == selectedEvent)
+        .toList();
 
     double bestSeconds = 0;
-    if (sessions.isNotEmpty) {
-      List<double> validTimes = sessions
+    if (eventSessions.isNotEmpty) {
+      List<double> validTimes = eventSessions
           .map((s) => _parseTimeToSeconds(s.time))
-          .where((t) => t > 5.0)
+          .where((t) => t > 0.0)
           .toList();
 
       if (validTimes.isNotEmpty) {
-        bestSeconds =
-            validTimes.reduce((curr, next) => curr < next ? curr : next);
-      } else {
-        bestSeconds = _parseTimeToSeconds(sessions.last.time);
+        bestSeconds = validTimes.reduce(
+          (curr, next) => curr < next ? curr : next,
+        );
       }
     }
-
-    double delta = bestSeconds > 0 ? bestSeconds - goalSeconds : 0;
-    String deltaMessage = delta > 0
-        ? "Need ${delta.toStringAsFixed(2)}s drop to reach goal"
-        : "Goal achieved! 🎉";
 
     return Scaffold(
       backgroundColor: const Color(0xFF061A2B),
@@ -77,7 +99,7 @@ class _ProgressTrackerPageState extends State<ProgressTrackerPage> {
         backgroundColor: const Color(0xFF061A2B),
         elevation: 0,
         title: const Text(
-          "Progress Tracker & Goal Delta",
+          "Progress Tracker",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
@@ -93,126 +115,196 @@ class _ProgressTrackerPageState extends State<ProgressTrackerPage> {
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0A253D),
-                      borderRadius: BorderRadius.circular(12),
-                      border:
-                          Border.all(color: Colors.cyan.withValues(alpha: 0.3)),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              "100 Free",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.cyan.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                "Recent/PB: ${bestSeconds > 0 ? bestSeconds.toStringAsFixed(2) : 'N/A'}",
-                                style: const TextStyle(
-                                  color: Colors.cyan,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                  if (uniqueEvents.isEmpty)
+                    const Expanded(
+                      child: Center(
+                        child: Text(
+                          "No completed races logged yet.",
+                          style: TextStyle(color: Colors.white54),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          "Goal: ${goalSeconds.toStringAsFixed(2)} • $deltaMessage",
+                      ),
+                    )
+                  else ...[
+                    // Dynamic Event Dropdown Menu
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0A253D),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.cyan.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: selectedEvent,
+                          isExpanded: true,
+                          dropdownColor: const Color(0xFF0A253D),
                           style: const TextStyle(
-                              color: Colors.white70, fontSize: 13),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 25),
-                  const Text(
-                    "Race Log History",
-                    style: TextStyle(
-                      color: Colors.pinkAccent,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: sessions.isEmpty
-                        ? const Center(
-                            child: Text(
-                              "No race logs recorded yet.",
-                              style: TextStyle(color: Colors.white54),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: sessions.length,
-                            itemBuilder: (context, index) {
-                              final session = sessions[index];
-                              // Fallback or use session.notes instead of non-existent moods
-                              final displayInfo = (session.notes != null &&
-                                      session.notes!.isNotEmpty)
-                                  ? session.notes!
-                                  : 'Focused';
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 10),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0A253D),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: Colors.white12),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          "8/5/2026",
-                                          style: TextStyle(
-                                              color: Colors.white54,
-                                              fontSize: 12),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          "$displayInfo (${session.energy ?? 3}/10 energy)",
-                                          style: const TextStyle(
-                                              color: Colors.white70,
-                                              fontSize: 13),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      session.time ?? "N/A",
-                                      style: const TextStyle(
-                                        color: Colors.cyan,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
-                  ),
+                          items: uniqueEvents.map((eventName) {
+                            return DropdownMenuItem(
+                              value: eventName,
+                              child: Text(eventName),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() {
+                                selectedEvent = val;
+                              });
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // Best Time Card
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0A253D),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.cyan.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  selectedEvent ?? "Unknown",
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.cyan.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  "Best: ${bestSeconds > 0 ? _formatSecondsToTime(bestSeconds) : 'N/A'}",
+                                  style: const TextStyle(
+                                    color: Colors.cyan,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Goal: Not yet linked to profile",
+                            style: TextStyle(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 25),
+                    const Text(
+                      "Race Log History",
+                      style: TextStyle(
+                        color: Colors.pinkAccent,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: eventSessions.isEmpty
+                          ? const Center(
+                              child: Text(
+                                "No completed races logged for this event yet.",
+                                style: TextStyle(color: Colors.white54),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: eventSessions.length,
+                              itemBuilder: (context, index) {
+                                // Reverses the list so the newest entries are at the top
+                                final session =
+                                    eventSessions[eventSessions.length -
+                                        1 -
+                                        index];
+                                final displayInfo =
+                                    (session.notes != null &&
+                                        session.notes!.isNotEmpty)
+                                    ? session.notes!
+                                    : 'Race Completed';
+                                return Container(
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF0A253D),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(color: Colors.white12),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              "Recent Log",
+                                              style: TextStyle(
+                                                color: Colors.white54,
+                                                fontSize: 12,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              "$displayInfo (${session.energy ?? '-'}/10 energy)",
+                                              style: const TextStyle(
+                                                color: Colors.white70,
+                                                fontSize: 13,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        session.time ?? "N/A",
+                                        style: const TextStyle(
+                                          color: Colors.cyan,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
                 ],
               ),
             ),

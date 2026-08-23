@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'user_storage.dart';
@@ -186,6 +187,7 @@ class _DashboardPageState extends State<DashboardPage> {
       StartRacePage(
         profile: profile,
         activeRaceQueue: _activeRaceQueue,
+        completedRaceHistory: _completedRaceHistory,
         onQueueUpdated: () {
           _persistRaces();
           setState(() {});
@@ -883,12 +885,14 @@ class _DashboardPageState extends State<DashboardPage> {
 class StartRacePage extends StatefulWidget {
   final UserProfile? profile;
   final List<RaceLogEntry> activeRaceQueue;
+  final List<RaceLogEntry> completedRaceHistory;
   final VoidCallback onQueueUpdated;
 
   const StartRacePage({
     super.key,
     required this.profile,
     required this.activeRaceQueue,
+    required this.completedRaceHistory,
     required this.onQueueUpdated,
   });
 
@@ -1162,7 +1166,9 @@ class _StartRacePageState extends State<StartRacePage> {
                       .toList();
                   entry.isCompleted = true;
 
+                  // Remove from queue and push into completed history list
                   widget.activeRaceQueue.removeWhere((e) => e.id == entry.id);
+                  widget.completedRaceHistory.insert(0, entry);
                 });
                 widget.onQueueUpdated();
                 Navigator.pop(context);

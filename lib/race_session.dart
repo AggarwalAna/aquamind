@@ -23,29 +23,28 @@ class RaceSession {
   }) : splits = splits ?? [];
 
   Map<String, dynamic> toJson() => {
-        'event': event,
-        'pool': pool,
-        'time': time,
-        'splits': splits,
-        'energy': energy,
-        'focus': focus,
-        'confidence': confidence,
-        'stress': stress,
-        'notes': notes,
-      };
+    'event': event,
+    'pool': pool,
+    'time': time,
+    'splits': splits,
+    'energy': energy,
+    'focus': focus,
+    'confidence': confidence,
+    'stress': stress,
+    'notes': notes,
+  };
 
   factory RaceSession.fromJson(Map<String, dynamic> json) => RaceSession(
-        event: json['event'] as String?,
-        pool: json['pool'] as String?,
-        time: json['time'] as String?,
-        splits: (json['splits'] as List<dynamic>?)
-                ?.map((e) => e.toString())
-                .toList() ??
-            [],
-        energy: json['energy'] as int?,
-        focus: json['focus'] as int?,
-        confidence: (json['confidence'] as num?)?.toDouble() ?? 5.0,
-        stress: (json['stress'] as num?)?.toDouble() ?? 5.0,
-        notes: json['notes'] as String?,
-      );
+    event: json['event'] as String?,
+    pool: json['pool'] as String?,
+    time: json['time'] as String?,
+    splits:
+        (json['splits'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+        [],
+    energy: json['energy'] as int?,
+    focus: json['focus'] as int?,
+    confidence: (json['confidence'] as num?)?.toDouble() ?? 5.0,
+    stress: (json['stress'] as num?)?.toDouble() ?? 5.0,
+    notes: json['notes'] as String?,
+  );
 }
