@@ -12,66 +12,105 @@ void main() async {
   runApp(const AquaMindApp());
 }
 
-class AquaMindApp extends StatefulWidget {
+class AquaMindApp extends StatelessWidget {
   const AquaMindApp({super.key});
 
   @override
-  State<AquaMindApp> createState() => _AquaMindAppState();
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      title: 'AquaMind',
+      debugShowCheckedModeBanner: false,
+      home: LandingLogoPage(),
+    );
+  }
 }
 
-class _AquaMindAppState extends State<AquaMindApp> {
-  bool _isLoading = true;
-  bool _hasProfile = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkProfile();
-  }
-
-  Future<void> _checkProfile() async {
-    try {
-      await UserStorage.loadAllData();
-      final profile = UserStorage.profile;
-      setState(() {
-        _hasProfile = profile != null && profile.name.trim().isNotEmpty;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint("Storage load error: $e");
-      setState(() {
-        _hasProfile = false;
-        _isLoading = false;
-      });
-    }
-  }
+// 1. The First Page showing Logo & Continue Button
+class LandingLogoPage extends StatelessWidget {
+  const LandingLogoPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          backgroundColor: Color(0xFF061A2B),
-          body: Center(
-            child: CircularProgressIndicator(color: Colors.cyanAccent),
+    return Scaffold(
+      backgroundColor: const Color(0xFF061A2B),
+      body: Center(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // App Custom Crest Artwork
+                Image.asset(
+                  'assets/images/aquamind_crest.png',
+                  height: 280,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) => const Icon(
+                    Icons.pool,
+                    size: 100,
+                    color: Colors.cyanAccent,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Continue Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.cyanAccent,
+                      foregroundColor: Colors.black,
+                    ),
+                    onPressed: () async {
+                      // Check if profile exists in storage when Continue is tapped
+                      await UserStorage.loadAllData();
+                      final profile = UserStorage.profile;
+                      final bool hasProfile =
+                          profile != null && profile.name.trim().isNotEmpty;
+
+                      if (!context.mounted) return;
+
+                      if (hasProfile) {
+                        // Subsequent runs: Go straight to Dashboard
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const DashboardPage(),
+                          ),
+                        );
+                      } else {
+                        // First time: Go to Onboarding Setup
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OnboardingPage(
+                              onProfileCreated: () {
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => const DashboardPage(),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                    child: const Text(
+                      "Continue",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
-      );
-    }
-
-    return MaterialApp(
-      title: 'AquaMind',
-      debugShowCheckedModeBanner: false,
-      home: _hasProfile
-          ? const DashboardPage()
-          : OnboardingPage(
-              onProfileCreated: () {
-                setState(() {
-                  _hasProfile = true;
-                });
-              },
-            ),
+      ),
     );
   }
 }
@@ -901,7 +940,6 @@ class StartRacePage extends StatefulWidget {
 }
 
 class _StartRacePageState extends State<StartRacePage> {
-  // When null, shows the event list hub. When an event is selected, shows the pre-race mental state & reaction form.
   String? _selectedActiveEvent;
 
   final Set<String> _selectedMentalStates = {"Focused"};
@@ -1038,7 +1076,7 @@ class _StartRacePageState extends State<StartRacePage> {
       _reactionTimeMs = null;
       _reactionStatus =
           "Tap 'Start Reaction Test' to evaluate mental readiness.";
-      _selectedActiveEvent = null; // Return to event hub after queuing
+      _selectedActiveEvent = null;
     });
 
     widget.onQueueUpdated();
@@ -1166,7 +1204,6 @@ class _StartRacePageState extends State<StartRacePage> {
                       .toList();
                   entry.isCompleted = true;
 
-                  // Remove from queue and push into completed history list
                   widget.activeRaceQueue.removeWhere((e) => e.id == entry.id);
                   widget.completedRaceHistory.insert(0, entry);
                 });
@@ -1281,7 +1318,6 @@ class _StartRacePageState extends State<StartRacePage> {
             ),
             const SizedBox(height: 16),
 
-            // Active Race Queue Card (Always visible at top if items exist)
             if (widget.activeRaceQueue.isNotEmpty) ...[
               Container(
                 padding: const EdgeInsets.all(16),
@@ -1373,7 +1409,6 @@ class _StartRacePageState extends State<StartRacePage> {
               const SizedBox(height: 16),
             ],
 
-            // Event Selection Hub or Pre-Race Form view
             if (_selectedActiveEvent == null) ...[
               const Text(
                 "Select Event to Start Preparation",
@@ -1458,7 +1493,6 @@ class _StartRacePageState extends State<StartRacePage> {
                       },
                     ),
             ] else ...[
-              // Pre-Race Mental State & Reaction Form for Selected Event
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
