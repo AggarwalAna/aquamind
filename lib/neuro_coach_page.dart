@@ -348,36 +348,38 @@ class _NeuroCoachPageState extends State<NeuroCoachPage> {
     );
   }
 
-  // 4. Technical Cues
+  // 4. Technical Cues (Dynamically Tailored to the Event)
   Widget _buildEventSpeedCard(String eventName) {
     String speedTips = "";
-    if (eventName.contains("Free")) {
+    final ev = eventName.toLowerCase();
+
+    if (ev.contains("free") || ev.contains("freestyle")) {
       speedTips =
-          "• High-Elbow Catch: Anchor maximum water mass with an early vertical forearm pull.\n\n"
+          "• High-Elbow Catch: Anchor maximum water mass with an early vertical forearm pull for $eventName.\n\n"
           "• Breakout Efficiency: Execute 4-5 dynamic dolphin kicks off every wall in tight streamline before breaking the surface breath-free.\n\n"
           "• Kick Tempo Maintenance: Keep a continuous 6-beat kick turnover through turn transitions to preserve forward velocity.";
-    } else if (eventName.contains("Back")) {
+    } else if (ev.contains("back") || ev.contains("backstroke")) {
       speedTips =
-          "• Head Stability & Hip Drive: Keep head static while driving aggressive hip rotation.\n\n"
+          "• Head Stability & Hip Drive: Keep head static while driving aggressive hip rotation for your $eventName.\n\n"
           "• SDK Velocity: Maximize underwater kick speed off every turn wall before surface transition.\n\n"
           "• Clean Recovery: Exit thumb-first and enter pinky-first without crossing the body midline.";
-    } else if (eventName.contains("Breast")) {
+    } else if (ev.contains("breast") || ev.contains("breaststroke")) {
       speedTips =
-          "• Pull-Out Glide Control: Hold streamline on the underwater pull-out to capitalize on wall push-off speed.\n\n"
+          "• Pull-Out Glide Control: Hold streamline on the underwater pull-out of your $eventName to capitalize on wall push-off speed.\n\n"
           "• Narrow Whip Kick: Keep knees inside shoulder width to minimize frontal resistance.\n\n"
           "• Dynamic Recovery: Shoot hands forward fast along the surface to transition immediately into glide phase.";
-    } else if (eventName.contains("Fly")) {
+    } else if (ev.contains("fly") || ev.contains("butterfly")) {
       speedTips =
-          "• Forward Chest Drive: Press momentum forward through the chest rather than bouncing vertically.\n\n"
+          "• Forward Chest Drive: Press momentum forward through the chest rather than bouncing vertically during your $eventName.\n\n"
           "• Second Kick Timing: Deliver a strong second kick as hands exit the water to drive hand recovery forward.\n\n"
           "• Low Chin Line: Keep chin near the water surface when breathing to maintain high hip alignment.";
-    } else if (eventName.contains("IM")) {
+    } else if (ev.contains("im") || ev.contains("medley")) {
       speedTips =
-          "• Stroke Transition Acceleration: Build velocity into stroke transition walls (Fly-to-Back, Back-to-Breast, Breast-to-Free).\n\n"
-          "• Pacing Distribution: Control Breaststroke leg tempo so legs remain fresh for the final Freestyle finish sprint.";
+          "• Stroke Transition Acceleration: Build velocity into stroke transition walls (Fly-to-Back, Back-to-Breast, Breast-to-Free) for your $eventName.\n\n"
+          "• Pacing Distribution: Control leg tempo across the middle legs so you stay fresh for the final Freestyle finish sprint.";
     } else {
       speedTips =
-          "• Turn Speed: Build stroke rate into turn walls and execute fast, compact flip transitions.";
+          "• Turn Speed & Pacing: Build stroke rate into turn walls for $eventName and execute fast, compact transitions.";
     }
 
     return _buildSectionCard(

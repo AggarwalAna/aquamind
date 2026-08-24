@@ -13,15 +13,41 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
-  final TextEditingController _nameController =
-      TextEditingController(text: "First_Name Last_Name");
-  final TextEditingController _ageController =
-      TextEditingController(text: "10");
+  final TextEditingController _nameController = TextEditingController(
+    text: "First_Name Last_Name",
+  );
+  final TextEditingController _ageController = TextEditingController(
+    text: "10",
+  );
   String _selectedCategory = "Club Swimmer";
+
+  // Comprehensive master list of all competitive events (same as SettingsPage)
+  final List<String> _availableEvents = [
+    '50 Free',
+    '100 Free',
+    '200 Free',
+    '400 Free',
+    '500 Free',
+    '800 Free',
+    '1000 Free',
+    '1650 Free',
+    '50 Back',
+    '100 Back',
+    '200 Back',
+    '50 Breast',
+    '100 Breast',
+    '200 Breast',
+    '50 Fly',
+    '100 Fly',
+    '200 Fly',
+    '100 IM',
+    '200 IM',
+    '400 IM',
+  ];
 
   final List<EventInputRow> _eventRows = [
     EventInputRow(
-      eventController: TextEditingController(text: "100 Free"),
+      selectedEventBase: "100 Free",
       pool: "SCY",
       pbController: TextEditingController(text: ""),
       goalController: TextEditingController(text: ""),
@@ -32,19 +58,21 @@ class _OnboardingPageState extends State<OnboardingPage> {
     "Club Swimmer",
     "High School Varsity",
     "Masters Swimmer",
-    "Triathlete / Multi-Sport"
+    "Triathlete / Multi-Sport",
   ];
 
   final List<String> _pools = ["SCY", "LCM", "SCM"];
 
   void _addEventRow() {
     setState(() {
-      _eventRows.add(EventInputRow(
-        eventController: TextEditingController(),
-        pool: "SCY",
-        pbController: TextEditingController(),
-        goalController: TextEditingController(),
-      ));
+      _eventRows.add(
+        EventInputRow(
+          selectedEventBase: _availableEvents.first,
+          pool: "SCY",
+          pbController: TextEditingController(),
+          goalController: TextEditingController(),
+        ),
+      );
     });
   }
 
@@ -63,16 +91,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
     List<EventRecord> records = [];
     for (var row in _eventRows) {
-      final ev = row.eventController.text.trim();
+      final ev = row.selectedEventBase;
       final pool = row.pool;
       final pb = row.pbController.text.trim();
       final goal = row.goalController.text.trim();
       if (ev.isNotEmpty) {
-        records.add(EventRecord(
-          eventName: "$ev ($pool)",
-          personalBest: pb,
-          goalTime: goal,
-        ));
+        records.add(
+          EventRecord(
+            eventName: "$ev ($pool)",
+            personalBest: pb,
+            goalTime: goal,
+          ),
+        );
       }
     }
 
@@ -85,7 +115,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
           ? records
           : [
               EventRecord(
-                  eventName: "100 Free (SCY)", personalBest: "", goalTime: "")
+                eventName: "100 Free (SCY)",
+                personalBest: "",
+                goalTime: "",
+              ),
             ],
     );
 
@@ -99,8 +132,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
       backgroundColor: const Color(0xFF061A2B),
       appBar: AppBar(
         backgroundColor: const Color(0xFF061A2B),
-        title: const Text("Welcome to AquaMind",
-            style: TextStyle(color: Colors.cyanAccent)),
+        title: const Text(
+          "Welcome to AquaMind",
+          style: TextStyle(color: Colors.cyanAccent),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -110,9 +145,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
             const Text(
               "Set Up Your Swimmer Profile",
               style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold),
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -127,9 +163,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 labelText: "Swimmer Name",
                 labelStyle: TextStyle(color: Colors.cyanAccent),
                 enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.cyanAccent)),
+                  borderSide: BorderSide(color: Colors.cyanAccent),
+                ),
                 focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Colors.cyanAccent)),
+                  borderSide: BorderSide(color: Colors.cyanAccent),
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -144,9 +182,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                       labelText: "Age",
                       labelStyle: TextStyle(color: Colors.cyanAccent),
                       enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.cyanAccent)),
+                        borderSide: BorderSide(color: Colors.cyanAccent),
+                      ),
                       focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Colors.cyanAccent)),
+                        borderSide: BorderSide(color: Colors.cyanAccent),
+                      ),
                     ),
                   ),
                 ),
@@ -157,8 +197,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     dropdownColor: const Color(0xFF0D2840),
                     style: const TextStyle(color: Colors.white),
                     decoration: const InputDecoration(
-                        labelText: "Swimmer Category",
-                        labelStyle: TextStyle(color: Colors.cyanAccent)),
+                      labelText: "Swimmer Category",
+                      labelStyle: TextStyle(color: Colors.cyanAccent),
+                    ),
                     items: _categories
                         .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                         .toList(),
@@ -172,15 +213,19 @@ class _OnboardingPageState extends State<OnboardingPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text("Initial Events, Course & PBs",
-                    style: TextStyle(
-                        color: Colors.cyanAccent,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16)),
+                const Text(
+                  "Initial Events, Course & PBs",
+                  style: TextStyle(
+                    color: Colors.cyanAccent,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.cyanAccent,
-                      foregroundColor: Colors.black),
+                    backgroundColor: Colors.cyanAccent,
+                    foregroundColor: Colors.black,
+                  ),
                   onPressed: _addEventRow,
                   icon: const Icon(Icons.add, size: 16),
                   label: const Text("Add Event"),
@@ -201,7 +246,8 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     color: const Color(0xFF0D2840),
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                        color: Colors.cyanAccent.withValues(alpha: 0.3)),
+                      color: Colors.cyanAccent.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Column(
                     children: [
@@ -209,12 +255,30 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         children: [
                           Expanded(
                             flex: 3,
-                            child: TextField(
-                              controller: row.eventController,
-                              style: const TextStyle(color: Colors.white),
+                            child: DropdownButtonFormField<String>(
+                              initialValue: row.selectedEventBase,
+                              dropdownColor: const Color(0xFF0D2840),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
                               decoration: const InputDecoration(
-                                  labelText: "Event Name (e.g., 200 Fly)",
-                                  labelStyle: TextStyle(color: Colors.white60)),
+                                labelText: "Event",
+                                labelStyle: TextStyle(color: Colors.cyanAccent),
+                              ),
+                              items: _availableEvents
+                                  .map(
+                                    (e) => DropdownMenuItem(
+                                      value: e,
+                                      child: Text(e),
+                                    ),
+                                  )
+                                  .toList(),
+                              onChanged: (val) {
+                                setState(() {
+                                  row.selectedEventBase = val!;
+                                });
+                              },
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -224,14 +288,20 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               initialValue: row.pool,
                               dropdownColor: const Color(0xFF061A2B),
                               style: const TextStyle(
-                                  color: Colors.white, fontSize: 13),
+                                color: Colors.white,
+                                fontSize: 13,
+                              ),
                               decoration: const InputDecoration(
-                                  labelText: "Course",
-                                  labelStyle:
-                                      TextStyle(color: Colors.cyanAccent)),
+                                labelText: "Course",
+                                labelStyle: TextStyle(color: Colors.cyanAccent),
+                              ),
                               items: _pools
-                                  .map((p) => DropdownMenuItem(
-                                      value: p, child: Text(p)))
+                                  .map(
+                                    (p) => DropdownMenuItem(
+                                      value: p,
+                                      child: Text(p),
+                                    ),
+                                  )
                                   .toList(),
                               onChanged: (val) {
                                 setState(() {
@@ -242,8 +312,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           ),
                           if (_eventRows.length > 1)
                             IconButton(
-                              icon: const Icon(Icons.delete,
-                                  color: Colors.redAccent),
+                              icon: const Icon(
+                                Icons.delete,
+                                color: Colors.redAccent,
+                              ),
                               onPressed: () => _removeEventRow(index),
                             ),
                         ],
@@ -256,8 +328,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               controller: row.pbController,
                               style: const TextStyle(color: Colors.white),
                               decoration: const InputDecoration(
-                                  labelText: "Current PB (e.g., 2:10.50)",
-                                  labelStyle: TextStyle(color: Colors.white60)),
+                                labelText: "Current PB (e.g., 58.40)",
+                                labelStyle: TextStyle(color: Colors.white60),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -266,8 +339,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               controller: row.goalController,
                               style: const TextStyle(color: Colors.white),
                               decoration: const InputDecoration(
-                                  labelText: "Goal Time (e.g., 2:05.00)",
-                                  labelStyle: TextStyle(color: Colors.white60)),
+                                labelText: "Goal Time (e.g., 56.50)",
+                                labelStyle: TextStyle(color: Colors.white60),
+                              ),
                             ),
                           ),
                         ],
@@ -283,12 +357,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
               height: 50,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.cyanAccent,
-                    foregroundColor: Colors.black),
+                  backgroundColor: Colors.cyanAccent,
+                  foregroundColor: Colors.black,
+                ),
                 onPressed: _completeOnboarding,
-                child: const Text("Save & Enter Dashboard",
-                    style:
-                        TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                child: const Text(
+                  "Save & Enter Dashboard",
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
             ),
           ],
@@ -299,13 +375,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
 }
 
 class EventInputRow {
-  final TextEditingController eventController;
+  String selectedEventBase;
   String pool;
   final TextEditingController pbController;
   final TextEditingController goalController;
 
   EventInputRow({
-    required this.eventController,
+    required this.selectedEventBase,
     required this.pool,
     required this.pbController,
     required this.goalController,
