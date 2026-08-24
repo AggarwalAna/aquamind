@@ -3,7 +3,7 @@ description: "A mobile application tracking race readiness and mental metrics."
 
 publish_to: "none"
 
-version: 1.0.0+9
+version: 1.0.0+10
 
 environment:
   sdk: ^3.12.2
@@ -20,6 +20,12 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: "^0.14.4"
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  image_path: "assets/images/logo.png"
+  android: true
+  ios: true
